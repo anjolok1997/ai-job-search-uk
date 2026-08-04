@@ -13,6 +13,14 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+
+- **Spec-pinning tests for the Language Gate's `/rank` contract** (#278) - four regression
+  guards in `tests/test_rank_command.py` pinning the `language_gate`/`language_note` fields
+  through Steps 2-5 of `/rank`, including the Step 4 persistence rule that was live-debugged
+  during #275 (vetoes reported in console output but `language_gate: null` on every persisted
+  entry). Mirrors the existing `gaps`/`strengths` pinning pattern. No behavior change.
+
 ## [1.3.0] - 2026-08-03
 
 ### Added
