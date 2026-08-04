@@ -2,9 +2,15 @@
   <img src="assets/mascot/pip_flight_loop.gif" alt="Pip, the courier bird" width="200">
 </p>
 
-# AI Job Search
+# 🇬🇧 AI Job Search UK
 
-*The job search that runs on your machine.*
+*The UK job search that runs on your machine.*
+
+> ## 🇬🇧 UK adaptation
+> This is a UK-focused fork of [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search).
+> **Changes:** UK job-board portal skills (Adzuna, Reed, …), UK city targeting
+> (`config/uk-cities.json`), Danish portals removed. Everything else tracks upstream.
+> Full credit for the original framework goes to Mads Lorentzen.
 
 <p align="center">
   <a href="https://trendshift.io/repositories/43622?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-43622" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/43622/daily" alt="MadsLorentzen%2Fai-job-search | Trendshift" width="250" height="55"/></a>

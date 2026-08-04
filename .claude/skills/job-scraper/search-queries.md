@@ -66,6 +66,8 @@ site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
 
 ## Location Filter
 
+**UK default locations live in `config/uk-cities.json`** — that file is the single source of truth for which cities this fork searches (see `config/README.md`). Portal CLIs search its `defaults` list when no `--location` is passed, and `--location` overrides per run. Edit `config/uk-cities.json` to change the defaults; keep the acceptable-areas list below in sync.
+
 When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
 - [YOUR_CITY] and surrounding areas
 - [ACCEPTABLE_AREA_1]

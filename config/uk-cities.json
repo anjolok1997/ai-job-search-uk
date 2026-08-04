@@ -1,0 +1,34 @@
+{
+  "description": "Default UK target locations for this fork's portal-search skills and /scrape. This is the single source of truth for which cities the fork searches. Portal CLIs default to `defaults` below when their --location/-l flag is omitted; passing --location always overrides these. Each portal maps a city's `name`/`aliases` onto its own location parameter (Adzuna `where=`, Reed `locationName=`, LinkedIn geo, etc.).",
+  "defaults": ["london", "manchester", "glasgow", "remote-uk"],
+  "cities": {
+    "london": {
+      "name": "London",
+      "region": "England",
+      "aliases": ["Greater London", "City of London", "Central London"]
+    },
+    "manchester": {
+      "name": "Manchester",
+      "region": "England",
+      "aliases": ["Greater Manchester", "Salford"]
+    },
+    "glasgow": {
+      "name": "Glasgow",
+      "region": "Scotland",
+      "aliases": ["Glasgow City"]
+    },
+    "edinburgh": {
+      "name": "Edinburgh",
+      "region": "Scotland",
+      "aliases": [],
+      "optional": true,
+      "note": "Not in `defaults` by default. Add \"edinburgh\" to the defaults array to include it in every search."
+    },
+    "remote-uk": {
+      "name": "Remote (UK)",
+      "region": "United Kingdom",
+      "remote": true,
+      "aliases": ["Remote UK", "Remote", "Work from home", "Home based"]
+    }
+  }
+}
