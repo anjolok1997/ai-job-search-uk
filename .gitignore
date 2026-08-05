@@ -26,6 +26,9 @@ salary_data.json
 **/job_scraper/seen_jobs.json
 **/job_scraper/notion_sync.json
 **/job_scraper/*.md
+# Sponsor-register cache (sponsor_lookup.py): ~10MB, re-downloaded daily from gov.uk.
+**/job_scraper/sponsor_register.csv
+**/job_scraper/sponsor_register.meta.json
 *_BehavioralReport.pdf
 linkedin_Profile.pdf
 

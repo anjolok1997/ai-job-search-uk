@@ -8,9 +8,10 @@
 
 > ## 🇬🇧 UK adaptation
 > This is a UK-focused fork of [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search).
-> **Changes:** UK job-board portal skills (Adzuna, Reed, …), UK city targeting
-> (`config/uk-cities.json`), Danish portals removed. Everything else tracks upstream.
-> Full credit for the original framework goes to Mads Lorentzen.
+> The core workflow (`/setup`, `/scrape`, `/apply`, and everything else) tracks upstream
+> unchanged; this fork swaps the job boards and evaluation gates for the UK market. Full
+> credit for the original framework goes to Mads Lorentzen. See
+> [What's different in this UK fork](#-whats-different-in-this-uk-fork) for the full list.
 
 <p align="center">
   <a href="https://trendshift.io/repositories/43622?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-43622" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/43622/daily" alt="MadsLorentzen%2Fai-job-search | Trendshift" width="250" height="55"/></a>
@@ -47,7 +48,7 @@ The original framework was built and proven by its author, **Mads Lorentzen**, o
 
 ## What this is
 
-A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market (Jobindex, Jobnet, Akademikernes Jobbank, etc.), but the pattern is designed to be swapped for your local job boards.
+A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. This fork ships **UK** job-board search skills (Reed, Welcome to the Jungle, Totaljobs, LinkedIn), a cross-portal **graduate / early-career filter**, and UK-specific evaluation gates (including an opt-in visa Sponsorship Gate); the underlying portal pattern is still designed to be swapped for any market.
 
 ```
 /setup          /scrape              /apply <url>
@@ -66,6 +67,19 @@ files ready    with fit ratings     (LaTeX, tailored)
 ```
 
 The framework encodes career guidance best practices, including structured evaluation criteria, forward-looking cover letter framing, and optional salary benchmarking.
+
+## 🇬🇧 What's different in this UK fork
+
+Everything below is additive to the upstream framework — the core `/setup` → `/scrape` → `/apply` workflow is unchanged.
+
+- **UK job-board portals.** The Danish demo portals are replaced with UK boards:
+  - **`reed-search`** — [reed.co.uk](https://www.reed.co.uk), one of the UK's largest boards. The fork's flagship portal. No auth, zero runtime deps. See `.agents/skills/reed-search/SKILL.md`.
+  - **`wttj-search`** — [Welcome to the Jungle](https://www.welcometothejungle.com) (ex-Otta), via its public JSON API. Strong for startup / scale-up and tech roles; results filtered to UK (GB) offices. See `.agents/skills/wttj-search/SKILL.md`.
+  - **`totaljobs-search`** — [totaljobs.com](https://www.totaljobs.com), a large UK generalist board covering every sector. A good second opinion alongside `reed-search` for broad "data across all sectors" or London coverage. No auth, zero runtime deps. See `.agents/skills/totaljobs-search/SKILL.md`.
+  - **`linkedin-search`** — retained from upstream, but `--location` is now **optional**: omit it and it searches the UK default cities below.
+- **UK city targeting (`config/uk-cities.json`).** A single source of truth for which cities a location-less search covers (default: London, Manchester, Glasgow, Remote-UK). Each portal maps these onto its own location scheme; edit the file to change the defaults or add cities (e.g. Edinburgh).
+- **Graduate / early-career search (`--graduate`).** A cross-portal flag for graduate schemes, junior, entry-level, trainee, intern and apprentice roles. Reed, WTTJ and Totaljobs filter client-side by title/contract/experience; LinkedIn uses its native internship + entry-level experience filter. On WTTJ and Totaljobs it works with no query as a broad graduate scan.
+- **UK visa Sponsorship Gate (opt-in).** Set `Needs visa sponsorship: Yes` in your profile and `/apply`'s fit evaluation adds a Sponsorship Gate: it flags postings that explicitly rule out sponsorship, and for postings that are silent it ranks how likely the employer can sponsor by checking the **gov.uk Register of Licensed Sponsors** (`sponsor_lookup.py`, downloaded daily, no API key). Left `No`/blank, the gate is skipped entirely.
 
 ## Prerequisites
 
@@ -89,7 +103,7 @@ cd ai-job-search
 PowerShell:
 
 ```powershell
-$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
+$tools = @("reed-search", "wttj-search", "totaljobs-search", "linkedin-search", "freehire-search")
 foreach ($tool in $tools) {
   Push-Location ".agents/skills/$tool/cli"
   bun install
@@ -100,12 +114,12 @@ foreach ($tool in $tools) {
 Bash / zsh / Git Bash:
 
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
+for tool in reed-search wttj-search totaljobs-search linkedin-search freehire-search; do
   (cd .agents/skills/$tool/cli && bun install)
 done
 ```
 
-For `linkedin-search` and `freehire-search` the install is optional: both have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
+All four UK portal skills have **zero runtime dependencies** and run with plain `bun`; `bun install` is optional and only pulls TypeScript dev types.
 
 ### 3. Set up your profile
 
@@ -190,12 +204,13 @@ ai-job-search/
 │   │   ├── job-scraper/               # Job search orchestration
 │   │   └── upskill/                   # /upskill skill gap analysis and learning plan
 │   └── settings.json                  # Claude Code permissions (shared, scoped)
+├── config/uk-cities.json              # UK default target cities (single source of truth)
+├── sponsor_lookup.py                  # gov.uk licensed-sponsor register lookup (Sponsorship Gate)
 ├── .agents/skills/                    # Job portal CLI tools
-│   ├── jobbank-search/                # Akademikernes Jobbank (Denmark)
-│   ├── jobdanmark-search/             # Jobdanmark.dk (Denmark)
-│   ├── jobindex-search/               # Jobindex.dk (Denmark)
-│   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
-│   ├── linkedin-search/               # LinkedIn public job listings (country-agnostic)
+│   ├── reed-search/                   # reed.co.uk (UK, flagship portal)
+│   ├── wttj-search/                   # Welcome to the Jungle / ex-Otta (UK-filtered, public API)
+│   ├── totaljobs-search/              # totaljobs.com (UK generalist board, all sectors)
+│   ├── linkedin-search/               # LinkedIn public job listings (UK city defaults)
 │   └── freehire-search/               # freehire.me tech job aggregator (multi-market, REST API)
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
@@ -295,7 +310,7 @@ If you prefer doing it by hand, the manual route still works: update the guidanc
 
 ### Job search tools
 
-The four Danish CLI tools in `.agents/skills/` (Jobbank, Jobdanmark, Jobindex, Jobnet) demonstrate the pattern for building a job-portal integration for a specific market. If you're in a different country, run:
+The UK CLI tools in `.agents/skills/` (`reed-search`, `wttj-search`, `totaljobs-search`) demonstrate the pattern for building a job-portal integration for a specific market. If you're in a different country, run:
 
 ```
 /add-portal
@@ -305,7 +320,7 @@ Give it your local job board's URL. The command investigates the portal (search-
 
 Maintaining a fork adapted to your market or language? Add it to the [Community forks & adaptations](https://github.com/MadsLorentzen/ai-job-search/discussions/78) thread so others can find it.
 
-For **country-agnostic** starting points outside Denmark, the repo ships two portal skills alongside the Danish demos:
+For **country-agnostic** starting points outside the UK, the repo ships two portal skills alongside the UK boards:
 
 - **`linkedin-search`** — built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. Field-agnostic, **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Berlin, Germany"`, `-l "Mumbai, Maharashtra, India"`, `-l "Remote"`, …). Intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.agents/skills/linkedin-search/SKILL.md`.
 - **`freehire-search`** — queries the [freehire.me](https://freehire.me) aggregator's public REST API (JSON, no API key). Tech-focused (software, data, engineering, DevOps, remote), multi-market via facet flags (`--region`, `--country`, `--remote`), and **zero runtime dependencies**. Unlike the HTML-scraping Danish portals, results come back structured (skills, seniority, category). The backend is MIT-licensed and [self-hostable](https://github.com/strelov1/freehire) — point `FREEHIRE_API_URL` at your own instance if you prefer. See `.agents/skills/freehire-search/SKILL.md`.

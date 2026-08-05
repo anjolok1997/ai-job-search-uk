@@ -30,6 +30,7 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 - **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
 
 - **Status:** [YOUR_EMPLOYMENT_STATUS]
+- **Needs visa sponsorship:** [YES_OR_NO] <!-- Yes only if you need an employer to sponsor a UK work visa. Enables the optional Sponsorship Gate in 04-job-evaluation.md; leave No/blank if you already have the right to work and the gate is skipped. -->
 - **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
 
 ### Education

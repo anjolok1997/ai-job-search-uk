@@ -1,5 +1,5 @@
 ---
-framework_version: 1.2.2
+framework_version: 1.3.0
 ---
 
 # Job Evaluation Framework
@@ -27,6 +27,45 @@ Read the posting's eligibility / work rights / "who can apply" section **verbati
 **Report an eligibility failure to the user with the quoted source** rather than silently dropping the role. They may know something about their own status that the profile does not record.
 
 If the candidate's permit also constrains *hours* or *start date* (a student visa with a term-time cap, a permit that begins on graduation), record that as a second gate under this section during `/setup`, with the specific dates. Do not merge it with the eligibility question above — they fail for different reasons and need different answers.
+
+A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
+
+## Sponsorship Gate — optional, run before scoring
+
+**Opt-in.** This gate runs **only if** the candidate's profile sets **Needs visa sponsorship: Yes** (CLAUDE.md / `01-candidate-profile.md`). If the candidate already holds the right to work (No or blank), skip this gate entirely — do not check it, do not report on it, and do not add sponsorship notes to postings. It exists so a candidate who *needs* a work visa isn't sent to apply for roles that will reject them at the first screening question; for everyone else it is pure noise.
+
+The Eligibility Gate above asks whether the candidate is *permitted* to hold the job at all (citizenship / PR / clearance). This gate asks the narrower employer-side question: **will this employer sponsor a work visa?** A role can pass Eligibility (no citizenship bar) yet fail here because the employer states it won't sponsor.
+
+Read the posting's "right to work", eligibility, or "who can apply" section **verbatim** and classify:
+
+| Posting wording | Verdict |
+|-----------------|---------|
+| Explicitly rules sponsorship out ("no visa sponsorship", "we are unable to sponsor", "must already have the right to work in the UK", "no sponsorship available for this role") | **FAIL — hard stop.** Do not score, do not draft. Quote the exact wording back to the user. |
+| Explicitly offers it ("visa sponsorship available", "we sponsor Skilled Worker visas", "licensed sponsor", "we welcome applicants requiring sponsorship") | **PASS** — verified acceptance. Worth noting as a positive in the application. |
+| **Silent** on sponsorship (says nothing either way) | **PROCEED, but rank via the register (below).** Most postings are silent. Do not treat silence as a yes or a no — instead check whether the employer holds a sponsor licence and report that likelihood. |
+
+**Rank a silent posting against the gov.uk register.** When the posting is silent, look the company up in the UK Register of Licensed Sponsors:
+
+```
+python sponsor_lookup.py "<Company Name>" --json
+```
+
+The tool downloads and caches the official gov.uk register (refreshed daily, no API key). Interpret its `licensed_sponsor` / `confidence` output:
+
+| Lookup result | How to report the silent posting |
+|---|---|
+| On the register (`confidence` exact/strong) | **Likely can sponsor.** A silent posting from a licensed sponsor is promising — proceed and note "employer holds a sponsor licence (gov.uk register)". Still confirm at role level, since a licence doesn't guarantee this specific role is open to sponsorship. |
+| On the register (`confidence` partial) | **Possible — name match is fuzzy.** Report the matched organisation name and let the user confirm it's the same entity. |
+| Not on the register | **No positive signal.** Not a FAIL — the company may sponsor under a parent entity or a differently-spelled name — but tell the user there's no register confirmation, so sponsorship is unverified and worth asking about early. |
+
+If `sponsor_lookup.py` can't reach gov.uk (`REGISTER_UNAVAILABLE` on stderr), skip the ranking and fall back to reporting the silent posting as plain "sponsorship unverified" — never block on the lookup.
+
+**Two rules that are easy to get wrong:**
+
+1. **Silence is not refusal.** The majority of postings never mention sponsorship. Silence means "unknown", not "won't sponsor" — don't drop a silent posting, flag it as unverified. Conversely, "right to work in the UK required" *is* an explicit refusal (it tells sponsorship-needers not to apply), so it FAILs even though it never uses the word "sponsorship".
+2. **A licensed sponsor isn't a guarantee for the role.** A company holding a sponsor licence (or a general "we sponsor" line) doesn't mean *this* posting is open to sponsorship — some employers sponsor only senior or shortage-occupation roles. Treat a company-wide statement as PASS-leaning but confirm at role level when the posting itself is silent.
+
+**Report a sponsorship failure to the user with the quoted source** rather than silently dropping the role — they may have information about their own status (e.g. a pending settled-status application) that the profile doesn't record.
 
 A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
 

@@ -68,11 +68,13 @@ describe("LinkedIn CLI flag validation", () => {
   });
 
   describe("existing validations (regression)", () => {
-    test("missing --location exits 1 with NO_LOCATION", async () => {
-      const result = await runCLI(["search"]);
-      expect(result.exitCode).not.toBe(0);
+    test("missing --location is not an error (falls back to UK city defaults)", async () => {
+      // --limit 0 keeps this offline-ish: the CLI still fetches the default
+      // cities but emits nothing, and must never raise NO_LOCATION/BAD_ARG.
+      const result = await runCLI(["search", "--limit", "0"]);
       const err = parsedStderr(result.stderr);
-      expect(err.code).toBe("NO_LOCATION");
+      expect(err.code).not.toBe("NO_LOCATION");
+      expect(err.code).not.toBe("BAD_ARG");
     });
 
     test("all valid flags produce no BAD_ARG", async () => {

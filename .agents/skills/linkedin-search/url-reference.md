@@ -16,7 +16,7 @@ Query params:
 | Param | Meaning | Example |
 |-------|---------|---------|
 | `keywords` | Free-text query | `data engineer` |
-| `location` | Place string | `Mumbai, Maharashtra, India` · `Berlin, Germany` · `Remote` |
+| `location` | Place string | `Mumbai, Maharashtra, India` · `Berlin, Germany` · `Remote` (omit `-l` to loop the `config/uk-cities.json` defaults) |
 | `f_TPR` | Posted-within window (seconds) | `r604800` (7d), `r2592000` (30d) |
 | `f_WT` | Workplace type | `1` on-site · `2` remote · `3` hybrid |
 | `start` | Pagination offset (10/page) | `0`, `10`, `20`, … |
@@ -39,4 +39,4 @@ Returns a single job's HTML: title (`top-card-layout__title`), company
 
 - No authentication required.
 - Respect rate limits — the CLI backs off on 429/5xx.
-- Country-agnostic: pass any `--location` (city, region, country, or "Remote").
+- Country-agnostic: pass any `--location` (city, region, country, or "Remote"). Omitting `--location` searches this fork's default UK cities from `config/uk-cities.json`, de-duplicating across them.

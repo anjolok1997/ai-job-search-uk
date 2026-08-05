@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.1
+framework_version: 1.2.0
 ---
 
 # Candidate Profile
@@ -16,6 +16,12 @@ framework_version: 1.1.1
 - **GitHub:** [YOUR_GITHUB_URL]
 - **Status:** [YOUR_EMPLOYMENT_STATUS]
 - **Constraints:** [YOUR_COMMUTE_OR_LOCATION_CONSTRAINTS]
+- **Needs visa sponsorship:** [YES_OR_NO]
+<!-- Set to Yes only if you require an employer to sponsor a work visa (e.g. a UK Skilled
+Worker visa). When Yes, the Sponsorship Gate in 04-job-evaluation.md runs and flags postings
+that explicitly rule out sponsorship. Leave as No (or blank) if you already hold the right to
+work — the gate is skipped entirely so you get no irrelevant noise. -->
+
 
 ### Languages
 <!-- Every language you can work in professionally, with your honest level. Used by the

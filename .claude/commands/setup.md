@@ -251,6 +251,7 @@ Ask about:
 - What languages they work in professionally, and roughly what level in each (native, fluent, conversational, a CEFR letter like B2 - whatever's natural for them to describe, doesn't need to be precise). Worth explaining why: a posting requiring a language they don't list at all gets auto-excluded later by the Language Gate, while one asking for a higher level in a language they do list gets flagged for their own judgment instead of silently passed or rejected - so it's worth being honest here rather than optimistic.
 - Current employment status
 - Family/commute constraints (if any)
+- Whether they need an employer to sponsor a UK work visa. Ask plainly ("Do you already have the right to work in the UK, or would you need visa sponsorship?"). Record as a `Needs visa sponsorship: Yes/No` line in the Identity section. Explain why: **Yes** turns on the optional Sponsorship Gate in `04-job-evaluation.md`, which flags postings that explicitly rule out sponsorship so they don't waste an application; **No** (the default) skips the gate entirely so they get no irrelevant notes. If they don't answer, default to No.
 
 ### Section 2: Education
 For each degree:

@@ -24,7 +24,7 @@ The CLI runs without any install because it has zero runtime dependencies.
 
 | Command | Description |
 |---------|-------------|
-| `search` | Search for job listings (`--location` required) |
+| `search` | Search for job listings (`--location` optional — defaults to `config/uk-cities.json`) |
 | `detail` | Fetch full detail for a single job listing |
 
 `search` accepts `--format json|table|plain` (default `json`); `detail` accepts `--format json|plain`.
@@ -33,6 +33,9 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` with
 ## Quick examples
 
 ```bash
+# Software roles across the default UK cities, last 7 days
+bun run src/cli.ts search -q "backend engineer" --jobage 7 --format table
+
 # Software roles in Hyderabad, last 7 days
 bun run src/cli.ts search -q "backend engineer" -l "Hyderabad, Telangana, India" --jobage 7 --format table
 
@@ -52,10 +55,11 @@ See `../SKILL.md` for the full flag reference and the Terms-of-Service note.
 
 | Flag | Alias | Description |
 |------|-------|-------------|
-| `--location` | `-l` | **Required.** Place string, e.g. `"Mumbai, Maharashtra, India"`, `"Berlin, Germany"`, `"Remote"`. |
+| `--location` | `-l` | Place string, e.g. `"Mumbai, Maharashtra, India"`, `"Berlin, Germany"`, `"Remote"`. Omit to use `config/uk-cities.json`. |
 | `--query` | `-q` | Keywords (title / skill / role). Recommended. |
 | `--jobage` | | Posted within N days: `1`, `7`, `14`, `30`. |
 | `--remote` | | `remote` \| `hybrid` \| `onsite`. |
+| `--graduate` | | Early-careers only (LinkedIn internship + entry-level filter). |
 | `--page` | | 1-indexed page (10 results/page). |
 | `--limit` | `-n` | Cap results emitted. |
 | `--format` | | `json` \| `table` \| `plain`. |
