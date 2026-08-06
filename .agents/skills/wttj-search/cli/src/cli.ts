@@ -20,7 +20,10 @@ function parseFlags(argv: string[]): Flags {
     if (a.startsWith("--") || a.startsWith("-")) {
       const key = alias[a.replace(/^-+/, "")] ?? a.replace(/^-+/, "")
       const next = argv[i + 1]
-      if (next === undefined || next.startsWith("-")) {
+      // A dash-led token is another flag, EXCEPT a negative number, which we
+      // capture as this flag's value so the numeric guard can reject it with
+      // the actual bad value rather than silently dropping the filter.
+      if (next === undefined || (next.startsWith("-") && !/^-\d/.test(next))) {
         flags[key] = true
       } else {
         flags[key] = next
@@ -74,22 +77,22 @@ async function main(): Promise<number> {
   if (cmd === "search") {
     const fmt = (flags.format as string) || "json"
 
-    const parseIntFlag = (name: string, raw: string | boolean | string[]): number | null => {
-      const val = parseInt(raw as string, 10)
-      if (isNaN(val)) {
-        process.stderr.write(
-          JSON.stringify({ error: `--${name} must be a number, got "${raw}"`, code: "BAD_ARG" }) + "\n",
-        )
-        return null
-      }
-      return val
-    }
-
+    // Numeric filter flags must be non-negative whole numbers. A bare
+    // parseInt() truncated "2.5" to 2 and accepted "-5" (parseFlags swallows a
+    // dash-led value as a valueless flag), so a fractional silently rounded and
+    // a negative silently disabled the filter. Reject both.
     for (const key of ["jobage", "page", "limit"]) {
-      if (flags[key] !== undefined && typeof flags[key] !== "boolean") {
-        const v = parseIntFlag(key, flags[key])
-        if (v === null) return 1
-        flags[key] = String(v)
+      const raw = flags[key]
+      if (raw === undefined) continue
+      if (typeof raw !== "string" || !/^\d+$/.test(raw)) {
+        const shown = raw === true ? "(missing value)" : String(raw)
+        process.stderr.write(
+          JSON.stringify({
+            error: `--${key} must be a non-negative whole number, got "${shown}"`,
+            code: "BAD_ARG",
+          }) + "\n",
+        )
+        return 1
       }
     }
 

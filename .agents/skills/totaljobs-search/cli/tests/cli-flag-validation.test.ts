@@ -41,4 +41,26 @@ describe("cli flag validation", () => {
     const err = JSON.parse(r.stderr)
     expect(err.code).toBe("BAD_ARG")
   })
+
+  // Regression (#281 bug class): a bare parseInt() accepted a negative --limit
+  // (silently disabling the cap) and truncated a fractional to a whole number.
+  test("negative --limit is rejected, not silently ignored", async () => {
+    const r = await runCLI(["search", "-q", "x", "--limit", "-5"])
+    expect(r.exitCode).toBe(1)
+    expect(JSON.parse(r.stderr).code).toBe("BAD_ARG")
+  })
+
+  test("fractional --jobage is rejected, not truncated", async () => {
+    const r = await runCLI(["search", "-q", "x", "--jobage", "2.5"])
+    expect(r.exitCode).toBe(1)
+    expect(JSON.parse(r.stderr).code).toBe("BAD_ARG")
+  })
+
+  // Regression: totaljobs robots.txt disallows the paginated query string, so
+  // any page beyond 1 must be refused rather than fetched.
+  test("--page beyond 1 is refused as robots-disallowed", async () => {
+    const r = await runCLI(["search", "-q", "x", "--page", "2"])
+    expect(r.exitCode).toBe(1)
+    expect(JSON.parse(r.stderr).code).toBe("ROBOTS_DISALLOWED")
+  })
 })
