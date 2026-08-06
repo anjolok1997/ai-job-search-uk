@@ -111,14 +111,15 @@ describe("url building", () => {
     expect(slugify("Data Engineer")).toBe("data-engineer")
     expect(slugify("  C++ / SQL  ")).toBe("c-sql")
   })
-  test("buildSearchUrl uses path form with in-<location>", () => {
-    expect(buildSearchUrl("data engineer", "London", 1)).toBe(
+  test("buildSearchUrl uses path form with in-<location> and never a ?page= query", () => {
+    expect(buildSearchUrl("data engineer", "London")).toBe(
       "https://www.totaljobs.com/jobs/data-engineer/in-london",
     )
-    expect(buildSearchUrl("data", "Manchester", 2)).toBe(
-      "https://www.totaljobs.com/jobs/data/in-manchester?page=2",
+    // No ?page= suffix: robots.txt disallows /jobs/*? query strings.
+    expect(buildSearchUrl("data", "Manchester")).toBe(
+      "https://www.totaljobs.com/jobs/data/in-manchester",
     )
-    expect(buildSearchUrl(undefined, "UK", 1)).toBe("https://www.totaljobs.com/jobs/jobs/in-uk")
+    expect(buildSearchUrl(undefined, "UK")).toBe("https://www.totaljobs.com/jobs/jobs/in-uk")
   })
 })
 

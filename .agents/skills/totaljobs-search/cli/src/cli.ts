@@ -19,7 +19,10 @@ function parseFlags(argv: string[]): Flags {
     if (a.startsWith("--") || a.startsWith("-")) {
       const key = alias[a.replace(/^-+/, "")] ?? a.replace(/^-+/, "")
       const next = argv[i + 1]
-      if (next === undefined || next.startsWith("-")) {
+      // A dash-led token is another flag, EXCEPT a negative number, which we
+      // capture as this flag's value so the numeric guard can reject it with
+      // the actual bad value rather than silently dropping the filter.
+      if (next === undefined || (next.startsWith("-") && !/^-\d/.test(next))) {
         flags[key] = true
       } else {
         flags[key] = next
@@ -45,7 +48,8 @@ SEARCH FLAGS
   --graduate              Early-careers only: keep graduate/junior/entry-level/
                           trainee/intern/apprentice titles. Works with no --query.
   --jobage <days>         Keep only jobs posted within N days (client-side). Default: all.
-  --page <n>              1-indexed page (25 results/page). Default 1.
+  --page <n>              Page 1 only. totaljobs robots.txt disallows the
+                          paginated query string, so >1 is refused.
   --limit, -n <n>         Cap results emitted (client-side).
   --format <fmt>          json (default) | table | plain.
 
@@ -71,23 +75,36 @@ async function main(): Promise<number> {
   if (cmd === "search") {
     const fmt = (flags.format as string) || "json"
 
-    const parseIntFlag = (name: string, raw: string | boolean | string[]): number | null => {
-      const val = parseInt(raw as string, 10)
-      if (isNaN(val)) {
+    // Numeric filter flags must be non-negative whole numbers. A bare
+    // parseInt() truncated "2.5" to 2 and accepted "-5" (parseFlags swallows a
+    // dash-led value as a valueless flag), so a fractional silently rounded and
+    // a negative silently disabled the filter. Reject both.
+    for (const key of ["jobage", "page", "limit"]) {
+      const raw = flags[key]
+      if (raw === undefined) continue
+      if (typeof raw !== "string" || !/^\d+$/.test(raw)) {
+        const shown = raw === true ? "(missing value)" : String(raw)
         process.stderr.write(
-          JSON.stringify({ error: `--${name} must be a number, got "${raw}"`, code: "BAD_ARG" }) + "\n",
+          JSON.stringify({
+            error: `--${key} must be a non-negative whole number, got "${shown}"`,
+            code: "BAD_ARG",
+          }) + "\n",
         )
-        return null
+        return 1
       }
-      return val
     }
 
-    for (const key of ["jobage", "page", "limit"]) {
-      if (flags[key] !== undefined && typeof flags[key] !== "boolean") {
-        const v = parseIntFlag(key, flags[key])
-        if (v === null) return 1
-        flags[key] = String(v)
-      }
+    const page = typeof flags.page === "string" ? Math.max(1, parseInt(flags.page, 10)) : 1
+    if (page > 1) {
+      process.stderr.write(
+        JSON.stringify({
+          error:
+            "totaljobs pagination beyond page 1 is unavailable: robots.txt disallows /jobs/*? " +
+            "query strings (only page 1 is fetchable). Narrow with -q/-l instead.",
+          code: "ROBOTS_DISALLOWED",
+        }) + "\n",
+      )
+      return 1
     }
 
     const opts: SearchOpts = {
@@ -95,7 +112,7 @@ async function main(): Promise<number> {
       location: typeof flags.location === "string" ? flags.location : undefined,
       jobage: typeof flags.jobage === "string" ? parseInt(flags.jobage, 10) : 9999,
       graduate: flags.graduate === true,
-      page: typeof flags.page === "string" ? Math.max(1, parseInt(flags.page, 10)) : 1,
+      page,
       limit: typeof flags.limit === "string" ? parseInt(flags.limit, 10) : undefined,
       format: (["json", "table", "plain"].includes(fmt) ? fmt : "json") as SearchOpts["format"],
     }

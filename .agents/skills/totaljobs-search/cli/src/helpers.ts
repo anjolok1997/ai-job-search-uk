@@ -10,9 +10,7 @@ export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")
 }
 
-const UA =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
-  "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+const UA = "totaljobs-search-skill/1.0 (+https://github.com/anjolok1997/ai-job-search-uk)"
 
 /** Fetch HTML with exponential backoff on 429/5xx. Returns "" on a 404. */
 export async function htmlFetch(url: string): Promise<string> {
@@ -111,12 +109,17 @@ export function slugify(s: string): string {
     .replace(/^-+|-+$/g, "")
 }
 
-/** Build a Totaljobs search URL: /jobs/<keywords>/in-<location>?page=N. */
-export function buildSearchUrl(query: string | undefined, location: string, page: number): string {
+/**
+ * Build a Totaljobs search URL: /jobs/<keywords>/in-<location>.
+ * No ?page= suffix: totaljobs' robots.txt allows /jobs/ and /jobs/*?q= but
+ * disallows every other /jobs/ query string (Disallow: /jobs/*?), so ?page=N
+ * would be a disallowed fetch. Pagination is capped at page 1 in the CLI.
+ */
+export function buildSearchUrl(query: string | undefined, location: string): string {
   const kw = query ? slugify(query) : "jobs"
   const loc = slugify(location)
   const path = loc ? `/jobs/${kw}/in-${loc}` : `/jobs/${kw}`
-  return `${BASE}${path}${page > 1 ? `?page=${page}` : ""}`
+  return `${BASE}${path}`
 }
 
 /** Build a canonical Totaljobs detail URL from a numeric id. */

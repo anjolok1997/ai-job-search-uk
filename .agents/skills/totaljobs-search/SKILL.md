@@ -54,7 +54,7 @@ Key flags:
 - `--jobage <days>` — keep only jobs posted within N days (client-side). Omit for all postings.
 - `--graduate` — early-careers only. Keeps graduate / junior / entry-level / trainee /
   intern / apprentice titles; searches the graduate keyword when `--query` is omitted.
-- `--page <n>` — page number (1-indexed, 25 results per page).
+- `--page <n>` — page 1 only. totaljobs' robots.txt disallows the paginated query string (`/jobs/*?`), so `--page` >1 is refused with a `ROBOTS_DISALLOWED` error.
 - `--limit <n>` / `-n <n>` — cap total results emitted (client-side).
 - `--format json|table|plain` — default `json`.
 

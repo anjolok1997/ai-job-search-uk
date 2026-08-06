@@ -13,9 +13,7 @@ export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")
 }
 
-const UA =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
-  "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+const UA = "wttj-search-skill/1.0 (+https://github.com/anjolok1997/ai-job-search-uk)"
 
 /** Fetch JSON with exponential backoff on 429/5xx. Returns null on a 404. */
 export async function jsonFetch(url: string): Promise<any | null> {

@@ -82,7 +82,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
     const seen = new Set<string>()
     let cards: JobCard[] = []
     for (const location of locations) {
-      const html = await htmlFetch(buildSearchUrl(opts.query, location, opts.page))
+      const html = await htmlFetch(buildSearchUrl(opts.query, location))
       for (const card of parseJobCards(html)) {
         if (seen.has(card.id)) continue
         seen.add(card.id)
