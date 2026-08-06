@@ -388,6 +388,7 @@ Thinking about a PR? Read [CONTRIBUTING.md](CONTRIBUTING.md) first - it explains
 
 ## Acknowledgements
 
+- [Mads Lorentzen](https://github.com/MadsLorentzen) for the original [ai-job-search](https://github.com/MadsLorentzen/ai-job-search) framework this fork adapts. This UK edition is a **listed community adaptation** in the upstream [Community forks & adaptations](https://github.com/MadsLorentzen/ai-job-search/discussions/78) index — checked and catalogued there alongside the other market and language ports. Go there to find (or add) an adaptation for your own market.
 - [Mikkel Krogholm](https://github.com/mikkelkrogsholm) ([skills repo](https://github.com/mikkelkrogsholm/skills)) for the job search CLI skills
 - Built with [Claude Code](https://claude.com/claude-code) by [Anthropic](https://anthropic.com)
 
