@@ -1,0 +1,9 @@
+# Upstream commits this fork has consciously decided never to port.
+# upstream_triage.py skips anything listed here so it stops re-surfacing in
+# the weekly report. One SHA per line (short or full); text after # is a note.
+#
+# Only for commits you've reviewed and rejected on purpose. Commits you DO
+# port drop off automatically once cherry-picked (patch-id match), so they
+# never need an entry here.
+
+cffacfdde   # Danish demo portals - this fork removed them on purpose

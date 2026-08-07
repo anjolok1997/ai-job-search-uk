@@ -67,12 +67,49 @@ def path_exists(path: str) -> bool:
     return r.returncode == 0
 
 
+def remote_slug(remote: str) -> str | None:
+    """owner/repo for a GitHub remote, or None if it can't be parsed."""
+    try:
+        url = git("remote", "get-url", remote).strip()
+    except subprocess.CalledProcessError:
+        return None
+    for sep in ("github.com/", "github.com:"):
+        if sep in url:
+            path = url.split(sep, 1)[1]
+            return path[:-4] if path.endswith(".git") else path
+    return None
+
+
+def load_wontport(path: str) -> list[str]:
+    """SHA prefixes the fork has decided never to port; missing file -> []."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            raw = f.read()
+    except FileNotFoundError:
+        return []
+    entries = []
+    for line in raw.splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            entries.append(line)
+    return entries
+
+
+def commit_cell(short: str, sha: str, slug: str | None) -> str:
+    if slug:
+        return f"[`{short}`](https://github.com/{slug}/commit/{sha})"
+    return f"`{short}`"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--remote", default="upstream")
     ap.add_argument("--branch", default="master")
+    ap.add_argument("--wontport", default=".github/upstream-wontport.txt")
     args = ap.parse_args()
     ref = f"{args.remote}/{args.branch}"
+    slug = remote_slug(args.remote)
+    wontport = load_wontport(args.wontport)
 
     try:
         git("rev-parse", "--verify", ref)
@@ -94,14 +131,17 @@ def main() -> int:
     fork_patch_ids = {p for p in (patch_id(s) for s in fork_only) if p}
     fork_subjects = {subject(s) for s in fork_only}
 
-    review: list[tuple[str, str, list[str]]] = []
-    skip: list[tuple[str, str, str]] = []
+    review: list[tuple[str, str, str, list[str]]] = []
+    skip: list[tuple[str, str, str, str]] = []
 
     for sha in behind:
         subj = subject(sha)
         short = sha[:9]
         if patch_id(sha) in fork_patch_ids or subj in fork_subjects:
-            skip.append((short, subj, "already applied (cherry-picked)"))
+            skip.append((short, sha, subj, "already applied (cherry-picked)"))
+            continue
+        if any(sha.startswith(e) for e in wontport):
+            skip.append((short, sha, subj, "on the fork's won't-port list"))
             continue
         touched = files_touched(sha)
         present = [f for f in touched if path_exists(f)]
@@ -110,11 +150,11 @@ def main() -> int:
         # only a doc line would. Low signal; demote it.
         substantive = [f for f in present if f != "CHANGELOG.md"]
         if touched and not present:
-            skip.append((short, subj, "touches only files not in this fork"))
+            skip.append((short, sha, subj, "touches only files not in this fork"))
         elif present and not substantive:
-            skip.append((short, subj, "changelog-only footprint in this fork"))
+            skip.append((short, sha, subj, "changelog-only footprint in this fork"))
         else:
-            review.append((short, subj, substantive))
+            review.append((short, sha, subj, substantive))
 
     lines: list[str] = []
     lines.append(f"Upstream `{ref}` has **{len(behind)}** commit(s) this fork lacks: "
@@ -128,11 +168,11 @@ def main() -> int:
         lines.append("")
         lines.append("| Commit | Subject | Fork files it touches |")
         lines.append("|---|---|---|")
-        for short, subj, present in review:
+        for short, sha, subj, present in review:
             shown = ", ".join(f"`{p}`" for p in present[:4]) or "_(new/shared paths)_"
             if len(present) > 4:
                 shown += f" +{len(present) - 4} more"
-            lines.append(f"| `{short}` | {subj} | {shown} |")
+            lines.append(f"| {commit_cell(short, sha, slug)} | {subj} | {shown} |")
     else:
         lines.append("")
         lines.append("_None._")
@@ -143,8 +183,8 @@ def main() -> int:
         lines.append("")
         lines.append("| Commit | Subject | Why |")
         lines.append("|---|---|---|")
-        for short, subj, why in skip:
-            lines.append(f"| `{short}` | {subj} | {why} |")
+        for short, sha, subj, why in skip:
+            lines.append(f"| {commit_cell(short, sha, slug)} | {subj} | {why} |")
     else:
         lines.append("")
         lines.append("_None._")
