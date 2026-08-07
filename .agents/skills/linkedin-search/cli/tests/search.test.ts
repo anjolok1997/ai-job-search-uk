@@ -63,6 +63,25 @@ describe("runSearch", () => {
     expect(out.meta.locations).toEqual(defaults.map((d) => d.location));
     expect(out.results).toHaveLength(1);
   });
+
+  test("--jobage-minutes 30 constructs f_TPR=r1800 in the request URL", async () => {
+    let capturedUrl = "";
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      capturedUrl = typeof input === "string" ? input : input.toString();
+      return new Response("");
+    }) as typeof fetch;
+
+    const code = await runSearch({
+      location: "Remote",
+      jobage: 9999,
+      jobageMinutes: 30,
+      page: 1,
+      format: "json",
+    });
+
+    expect(code).toBe(0);
+    expect(capturedUrl).toContain("f_TPR=r1800");
+  });
 });
 
 describe("loadDefaultLocations", () => {

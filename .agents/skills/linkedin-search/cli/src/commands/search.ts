@@ -5,6 +5,7 @@ import {
   htmlFetch,
   parseJobCards,
   jobageToTPR,
+  minutesToTPR,
   workTypeFlag,
   writeError,
   type JobCard,
@@ -14,6 +15,7 @@ export interface SearchOpts {
   query?: string
   location?: string
   jobage: number
+  jobageMinutes?: number
   remote?: string // "remote" | "hybrid" | "onsite"
   graduate?: boolean
   page: number
@@ -70,7 +72,7 @@ function buildUrl(opts: SearchOpts, target: LocationTarget): string {
   const params = new URLSearchParams()
   if (opts.query) params.set("keywords", opts.query)
   if (target.location) params.set("location", target.location)
-  const tpr = jobageToTPR(opts.jobage)
+  const tpr = opts.jobageMinutes !== undefined ? minutesToTPR(opts.jobageMinutes) : jobageToTPR(opts.jobage)
   if (tpr) params.set("f_TPR", tpr)
   const wt = workTypeFlag(target.remote ?? opts.remote)
   if (wt) params.set("f_WT", wt)

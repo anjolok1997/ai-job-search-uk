@@ -51,6 +51,7 @@ Key flags:
 - `--location <text>` / `-l <text>` — a LinkedIn place string, e.g. `"Mumbai, Maharashtra, India"`, `"Berlin, Germany"`, `"London, United Kingdom"`, or `"Remote"`. **Omit to search the default UK cities in `config/uk-cities.json`** (de-duplicated; the remote default becomes a UK-wide search with the remote filter).
 - `--query <text>` / `-q <text>` — keyword search (title, skill, role). Recommended.
 - `--jobage <days>` — posted within N days: `1`, `7`, `14`, `30`. Omit for all postings.
+- `--jobage-minutes <n>` — posted within N minutes (sub-day precision, e.g. `30`). Conflicts with `--jobage` — pass only one.
 - `--remote <mode>` — `remote`, `hybrid`, or `onsite` (workplace-type filter).
 - `--graduate` — early-careers only (LinkedIn internship + entry-level experience filter).
 - `--page <n>` — page number (1-indexed, 10 results per page).
@@ -81,6 +82,9 @@ bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "product manager
 
 # Any role, fully remote
 bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "paralegal" -l "Remote" --format table
+
+# Engineer roles, remote, posted in the last 30 minutes
+bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "engineer" -l "Remote" --jobage-minutes 30 --format table
 
 # Full details for a specific job
 bun run .agents/skills/linkedin-search/cli/src/cli.ts detail 4426311357 --format plain

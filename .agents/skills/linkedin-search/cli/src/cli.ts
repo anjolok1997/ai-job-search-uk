@@ -48,6 +48,7 @@ SEARCH FLAGS
                           Omit to search the default UK cities in config/uk-cities.json.
   --query, -q <text>      Keywords (job title, skill, or role). Recommended.
   --jobage <days>         Posted within N days: 1, 7, 14, 30. Default: all.
+  --jobage-minutes <n>    Posted within N minutes (sub-day precision). Conflicts with --jobage.
   --remote <mode>         remote | hybrid | onsite. Filter by workplace type.
   --graduate              Early-careers only: LinkedIn internship + entry-level filter.
   --page <n>              1-indexed page (10 results/page). Default 1.
@@ -58,6 +59,7 @@ EXAMPLES
   bun run src/cli.ts search -q "data engineer" -l "Bengaluru, Karnataka, India" --jobage 30 --format table
   bun run src/cli.ts search -q "product manager" -l "Berlin, Germany" --remote remote --format table
   bun run src/cli.ts search -q "paralegal" -l "Remote" --format table
+  bun run src/cli.ts search -q "engineer" -l "Remote" --jobage-minutes 30 --format table
   bun run src/cli.ts detail 4300011451 --format plain
 
 Personal use only — uses LinkedIn's public pages; keep volume low (LinkedIn ToS).
@@ -77,6 +79,16 @@ async function main(): Promise<number> {
     const location = typeof flags.location === "string" ? flags.location : undefined
     const fmt = (flags.format as string) || "json"
 
+    if (flags.jobage !== undefined && flags["jobage-minutes"] !== undefined) {
+      process.stderr.write(
+        JSON.stringify({
+          error: "--jobage and --jobage-minutes both set a freshness window; pass only one",
+          code: "CONFLICTING_AGE_FLAGS",
+        }) + "\n",
+      )
+      return 1
+    }
+
     const parseIntFlag = (name: string, raw: string | boolean | string[]): number | null => {
       const val = parseInt(raw as string, 10)
       if (isNaN(val)) {
@@ -90,6 +102,18 @@ async function main(): Promise<number> {
       const v = parseIntFlag("jobage", flags.jobage)
       if (v === null) return 1
       flags.jobage = String(v)
+    }
+    if (flags["jobage-minutes"] !== undefined) {
+      const raw = flags["jobage-minutes"]
+      const v = parseIntFlag("jobage-minutes", raw)
+      if (v === null) return 1
+      if (v <= 0) {
+        process.stderr.write(
+          JSON.stringify({ error: `--jobage-minutes must be a positive number, got "${raw}"`, code: "BAD_ARG" }) + "\n",
+        )
+        return 1
+      }
+      flags["jobage-minutes"] = String(v)
     }
     if (flags.page !== undefined) {
       const v = parseIntFlag("page", flags.page)
@@ -106,6 +130,7 @@ async function main(): Promise<number> {
       query: typeof flags.query === "string" ? flags.query : undefined,
       location,
       jobage: flags.jobage ? parseInt(flags.jobage as string, 10) : 9999,
+      jobageMinutes: flags["jobage-minutes"] ? parseInt(flags["jobage-minutes"] as string, 10) : undefined,
       remote: typeof flags.remote === "string" ? flags.remote : undefined,
       graduate: flags.graduate === true,
       page: flags.page ? Math.max(1, parseInt(flags.page as string, 10)) : 1,
