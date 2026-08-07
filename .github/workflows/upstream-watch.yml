@@ -49,7 +49,9 @@ jobs:
 
       - name: Open or update the rolling issue
         env:
-          GH_TOKEN: ${{ secrets.UPSTREAM_WATCH_TOKEN }}
+          # Built-in token is scoped to this repo only, so the digest can never
+          # be written outside the fork (the root cause of #300).
+          GH_TOKEN: ${{ github.token }}
           # Pin to this fork. Without it, the `upstream` git remote added above
           # makes gh's remote resolution target the base repo, so the digest
           # lands on upstream's tracker instead of the fork's (see #300).
