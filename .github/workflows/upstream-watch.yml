@@ -50,6 +50,10 @@ jobs:
       - name: Open or update the rolling issue
         env:
           GH_TOKEN: ${{ secrets.UPSTREAM_WATCH_TOKEN }}
+          # Pin to this fork. Without it, the `upstream` git remote added above
+          # makes gh's remote resolution target the base repo, so the digest
+          # lands on upstream's tracker instead of the fork's (see #300).
+          GH_REPO: ${{ github.repository }}
         run: |
           title="Upstream sync watch"
           existing=$(gh issue list --state open --search "in:title \"$title\"" \
